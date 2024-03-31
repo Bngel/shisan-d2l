@@ -3,8 +3,37 @@ from torchvision import datasets
 from torch.utils import data
 from torchvision import transforms
 import torch
+import hashlib
+import os
+import tarfile
+import zipfile
+import requests
 
+DATA_HUB = dict()
+DATA_URL = 'http://d2l-data.s3-accelerate.amazonaws.com/'
 
+def download(url, folder='./data', sha1_hash=None):
+    if not url.startswith('http'):
+        url, sha1_hash = DATA_HUB[url]
+    os.makedirs(folder, exist_ok=True)
+    f_name = os.path.join(folder, url.split('/')[-1])
+    # Check if hit cache
+    if os.path.exists(f_name) and sha1_hash:
+        sha1 = hashlib.sha1()
+        with open(f_name, 'rb') as f:
+            while True:
+                data = f.read(1048576)
+                if not data:
+                    break
+                sha1.update(data)
+        if sha1.hexdigest() == sha1_hash:
+            return f_name
+    # Download
+    print(f'Downloading {f_name} from {url}...')
+    r = requests.get(url, stream=True, verify=True)
+    with open(f_name, 'wb') as f:
+        f.write(r.content)
+    return f_name
 def load_data_fashion_mnist(batch_size, resize=None):
     trans = [transforms.ToTensor()]
     if resize:

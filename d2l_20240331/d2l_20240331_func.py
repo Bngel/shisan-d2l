@@ -141,3 +141,12 @@ def sgd(params, lr, batch_size):
         for param in params:
             param -= lr * param.grad / batch_size
             param.grad.zero_()
+
+def dropout_layer(X, dropout):
+    assert 0 <= dropout <= 1
+    if dropout == 1:
+        return torch.zeros_like(X)
+    if dropout == 0:
+        return X
+    mask = (torch.rand(X.shape) > dropout).float()
+    return mask * X / (1.0 - dropout)

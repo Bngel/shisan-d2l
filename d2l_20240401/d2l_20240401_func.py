@@ -225,3 +225,4 @@ def try_all_gpus():
         torch.device(f'cuda:{i}') for i in range(torch.cuda.device_count())
     ]
     return devices if devices else [torch.device['cpu']]
+
